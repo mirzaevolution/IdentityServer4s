@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication;
+using MGR.WebApp.Helpers;
 
 namespace MGR.WebApp
 {
@@ -62,6 +63,7 @@ namespace MGR.WebApp
                 options.Scope.Add("phone");
                 options.Scope.Add("job");
                 options.Scope.Add("offline_access");
+                options.Scope.Add("locked_api");
 
                 options.ClaimActions.MapJsonKey(JwtClaimTypes.Name, JwtClaimTypes.Name);
                 options.ClaimActions.MapJsonKey(JwtClaimTypes.Email, JwtClaimTypes.Email);
@@ -71,7 +73,8 @@ namespace MGR.WebApp
                 options.ClaimActions.MapJsonKey("job_department", "job_department");
 
             });
-
+            services.AddHttpContextAccessor();
+            services.AddTransient<IdentityHelpers>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 

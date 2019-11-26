@@ -36,6 +36,7 @@ namespace MGR.AuthServer
                 .AddInMemoryIdentityResources(AuthConfigs.GetIdentityResources())
                 .AddInMemoryClients(AuthConfigs.GetClients())
                 .AddTestUsers(AuthConfigs.GetTestUsers())
+                .AddInMemoryApiResources(AuthConfigs.GetApiResources())
                 .AddDeveloperSigningCredential();
 
 

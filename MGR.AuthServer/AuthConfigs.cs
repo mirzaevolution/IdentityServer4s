@@ -33,6 +33,21 @@ namespace MGR.AuthServer
                 }
             };
         }
+        public static IEnumerable<ApiResource> GetApiResources()
+        {
+            return new List<ApiResource>
+            {
+                new ApiResource("locked_api","Locked Api")
+                {
+                    UserClaims =
+                    {
+                        "name",
+                        "email",
+                        "job_title"
+                    }
+                }
+            };
+        }
         public static IEnumerable<Client> GetClients()
         {
             return new List<Client>
@@ -52,7 +67,8 @@ namespace MGR.AuthServer
                         IdentityServerConstants.StandardScopes.Email,
                         IdentityServerConstants.StandardScopes.Profile,
                         IdentityServerConstants.StandardScopes.Phone,
-                        "job"
+                        "job",
+                        "locked_api"
                     },
                     ClientId = "mgr.webapp",
                     ClientSecrets =
@@ -74,6 +90,18 @@ namespace MGR.AuthServer
                     RefreshTokenUsage = TokenUsage.OneTimeOnly,
                     UpdateAccessTokenClaimsOnRefresh = true
 
+                },
+                new Client
+                {
+                    ClientId = "mgr.coreapi",
+                    ClientSecrets =
+                    {
+                        new Secret("secret".Sha256())
+                    },
+                    AllowedScopes = { "locked_api","offline_access" },
+                    AllowOfflineAccess = true,
+                    AccessTokenType = AccessTokenType.Jwt,
+                    AllowedGrantTypes = GrantTypes.ResourceOwnerPasswordAndClientCredentials
                 }
             };
         }
