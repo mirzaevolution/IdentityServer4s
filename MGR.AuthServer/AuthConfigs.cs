@@ -41,7 +41,7 @@ namespace MGR.AuthServer
                 new Client
                 {
                     AllowedGrantTypes = { GrantType.Hybrid, "refresh_token" },
-                    AlwaysIncludeUserClaimsInIdToken = false,
+                    AlwaysIncludeUserClaimsInIdToken = true,
                     AllowOfflineAccess = true,
                     AllowRememberConsent = true,
                     AllowedScopes =

@@ -55,7 +55,7 @@ namespace MGR.WebApp
                 options.ResponseType = OidcConstants.ResponseTypes.CodeIdToken;
                 options.SaveTokens = true;
 
-                options.GetClaimsFromUserInfoEndpoint = true;
+                options.GetClaimsFromUserInfoEndpoint = false;
 
                 options.Scope.Add("email");
                 options.Scope.Add("profile");
