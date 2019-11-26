@@ -52,19 +52,21 @@ namespace MGR.WebApp
                 options.ClientId = "mgr.webapp";
                 options.ClientSecret = "webapp_secret";
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.ResponseType = OidcConstants.ResponseTypes.CodeIdToken;
+                options.ResponseType = OidcConstants.ResponseTypes.CodeIdTokenToken;
                 options.SaveTokens = true;
 
-                options.GetClaimsFromUserInfoEndpoint = false;
+                options.GetClaimsFromUserInfoEndpoint = true;
 
                 options.Scope.Add("email");
                 options.Scope.Add("profile");
                 options.Scope.Add("phone");
                 options.Scope.Add("job");
-                
+                options.Scope.Add("offline_access");
+
                 options.ClaimActions.MapJsonKey(JwtClaimTypes.Name, JwtClaimTypes.Name);
                 options.ClaimActions.MapJsonKey(JwtClaimTypes.Email, JwtClaimTypes.Email);
                 options.ClaimActions.MapJsonKey(JwtClaimTypes.PhoneNumber, JwtClaimTypes.PhoneNumber);
+                options.ClaimActions.MapJsonKey("given_name", "given_name");
                 options.ClaimActions.MapJsonKey("job_title", "job_title");
                 options.ClaimActions.MapJsonKey("job_department", "job_department");
 
@@ -86,11 +88,11 @@ namespace MGR.WebApp
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            app.UseAuthentication();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
-            app.UseAuthentication();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

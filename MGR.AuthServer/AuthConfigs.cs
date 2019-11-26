@@ -40,10 +40,12 @@ namespace MGR.AuthServer
                 //Web Application
                 new Client
                 {
+                    AllowAccessTokensViaBrowser = true,
                     AllowedGrantTypes = { GrantType.Hybrid, "refresh_token" },
-                    AlwaysIncludeUserClaimsInIdToken = true,
+                    AlwaysIncludeUserClaimsInIdToken = false,
                     AllowOfflineAccess = true,
                     AllowRememberConsent = true,
+                    RequireConsent = false,
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
@@ -68,13 +70,13 @@ namespace MGR.AuthServer
                         "https://localhost:44311/signout-callback-oidc",
                         "https://localhost:44365/signout-callback-oidc"
                     },
+
                     RefreshTokenUsage = TokenUsage.OneTimeOnly,
                     UpdateAccessTokenClaimsOnRefresh = true
 
                 }
             };
         }
-
         public static List<TestUser> GetTestUsers()
         {
             return new List<TestUser>
@@ -88,6 +90,7 @@ namespace MGR.AuthServer
                     {
                         new Claim(JwtClaimTypes.Email,"ghulamcyber@hotmail.com"),   // ===> Email Scope
                         new Claim(JwtClaimTypes.Name, "Mirza Ghulam Rasyid"),       // ===> Profile Scope
+                        new Claim(JwtClaimTypes.GivenName,"Mirza"),                 // ===> Profile Scope
                         new Claim(JwtClaimTypes.PhoneNumber,"085806377218"),        // ===> Phone Scope
                         new Claim("job_title","Pentester"),                         // ===> Job Scope
                         new Claim("job_department", "Cyber Security")               // ===> Job Scope
