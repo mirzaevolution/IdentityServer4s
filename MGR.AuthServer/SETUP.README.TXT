@@ -1,0 +1,5 @@
+﻿Install nuget package(s)
+1. IdentityServer4 -v 2.5.3
+
+Open powershell on the MGR.AuthServer main directory and paste this script
+iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/IdentityServer/IdentityServer4.Quickstart.UI/master/getmaster.ps1'))

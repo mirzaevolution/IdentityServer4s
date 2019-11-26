@@ -1,0 +1,35 @@
+﻿@model List<Tuple<string, string>>
+@{
+	ViewData["Title"] = "Claims";
+}
+
+<h1>Claims</h1>
+
+@if (Model != null && Model.Any())
+{
+	<ul>
+
+		@foreach (var item in Model)
+		{
+
+			if (new string[] { "id_token", "access_token" }.Any(x => x == item.Item1))
+			{
+				<li>
+					<div>
+						<p><strong>@item.Item1:</strong> </p>
+						<p><textarea cols="120" rows="5" style="width:100%">@item.Item2</textarea></p>
+					</div>
+				</li>
+			}
+			else
+			{
+
+				<li>
+					<div>
+						<p><strong>@item.Item1:</strong> @item.Item2</p>
+					</div>
+				</li>
+			}
+		}
+	</ul>
+}

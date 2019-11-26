@@ -1,0 +1,2 @@
+﻿Install nuget package(s)
+1. IdentityModel (latest)
