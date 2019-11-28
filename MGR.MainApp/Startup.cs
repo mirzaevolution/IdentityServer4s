@@ -69,7 +69,6 @@ namespace MGR.MainApp
                     options.Scope.Add("offline_access");
                     options.Scope.Add("profile");
                     options.Scope.Add("department");
-
                     options.ClaimActions.MapJsonKey("name", "name");
                     options.ClaimActions.MapJsonKey("role", "role");
                     options.ClaimActions.MapJsonKey("user_department", "user_department");

@@ -73,6 +73,37 @@ namespace MGR.IDP
                     {
                         "https://localhost:44315/signout-callback-oidc"
                     }
+                },
+                new Client
+                {
+                    ClientId = "mgr.webform",
+                    ClientSecrets =
+                    {
+                        new Secret("webform_secret".Sha256())
+                    },
+                    AllowAccessTokensViaBrowser = true,
+                    AlwaysIncludeUserClaimsInIdToken = true,
+                    AllowOfflineAccess = true, //refresh_token
+                    //RequireClientSecret = false,
+                    RedirectUris =
+                    {
+                        "https://localhost:44308/signin-oidc"
+                    },
+                    PostLogoutRedirectUris =
+                    {
+                        "https://localhost:44308"
+                    },
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        "department"
+                    },
+                    AllowedGrantTypes = 
+                    {
+                        GrantType.Implicit,
+                        OidcConstants.GrantTypes.RefreshToken
+                    }
                 }
             };
         }
