@@ -75,7 +75,7 @@ namespace IdentityServer4.Quickstart.UI
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginInputModel model, string button)
-        {
+        {   
             // check if we are in the context of an authorization request
             var context = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
 

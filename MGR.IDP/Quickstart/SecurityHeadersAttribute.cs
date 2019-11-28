@@ -34,15 +34,15 @@ namespace IdentityServer4.Quickstart.UI
                 // csp += "img-src 'self' https://pbs.twimg.com;";
 
                 // once for standards compliant browsers
-                if (!context.HttpContext.Response.Headers.ContainsKey("Content-Security-Policy"))
-                {
-                    context.HttpContext.Response.Headers.Add("Content-Security-Policy", csp);
-                }
-                // and once again for IE
-                if (!context.HttpContext.Response.Headers.ContainsKey("X-Content-Security-Policy"))
-                {
-                    context.HttpContext.Response.Headers.Add("X-Content-Security-Policy", csp);
-                }
+                //if (!context.HttpContext.Response.Headers.ContainsKey("Content-Security-Policy"))
+                //{
+                //    context.HttpContext.Response.Headers.Add("Content-Security-Policy", csp);
+                //}
+                //// and once again for IE
+                //if (!context.HttpContext.Response.Headers.ContainsKey("X-Content-Security-Policy"))
+                //{
+                //    context.HttpContext.Response.Headers.Add("X-Content-Security-Policy", csp);
+                //}
 
                 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
                 var referrer_policy = "no-referrer";

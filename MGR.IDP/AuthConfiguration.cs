@@ -67,11 +67,15 @@ namespace MGR.IDP
                     RequireConsent = false,
                     RedirectUris =
                     {
-                        "https://localhost:44315/signin-oidc"
+                        "https://localhost:44315/signin-oidc",
+                        "https://localhost:44308/signin-oidc"
+
                     },
                     PostLogoutRedirectUris =
                     {
-                        "https://localhost:44315/signout-callback-oidc"
+                        "https://localhost:44315/signout-callback-oidc",
+                        "https://localhost:44308"
+
                     }
                 },
                 new Client
@@ -85,6 +89,7 @@ namespace MGR.IDP
                     AlwaysIncludeUserClaimsInIdToken = true,
                     AllowOfflineAccess = true, //refresh_token
                     //RequireClientSecret = false,
+                    RequireConsent = false,
                     RedirectUris =
                     {
                         "https://localhost:44308/signin-oidc"

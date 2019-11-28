@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Owin.Security.Cookies;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -13,6 +14,9 @@ namespace MGR.MainAppWebForms
         {
             if (User.Identity.IsAuthenticated)
             {
+                Session.Clear();
+
+                Request.GetOwinContext().Authentication.SignOut(CookieAuthenticationDefaults.AuthenticationType, "oidc");
                 Request.GetOwinContext().Authentication.SignOut();
             }
             else

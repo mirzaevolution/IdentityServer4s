@@ -41,7 +41,7 @@
                                 }
                                 <div class="form-group">
                                     <button class="btn btn-primary" name="button" value="login">Login</button>
-                                    <button class="btn btn-default" name="button" value="cancel">Cancel</button>
+                                    <button class="btn btn-default" name="button" type="button" onclick="backToPreviousPage()" id="buttonCancel">Cancel</button>
                                 </div>
                             </fieldset>
                         </form>
@@ -49,7 +49,6 @@
                 </div>
             </div>
         }
-
         @if (Model.VisibleExternalProviders.Any())
         {
             <div class="col-md-6 col-sm-6 external-providers">
@@ -86,3 +85,16 @@
         }
     </div>
 </div>
+
+@section scripts{ 
+<script>
+	$(document).ready(function () {
+		//$("#buttonCancel").click(function () {
+		//	history.back();
+		//});
+	});
+	function backToPreviousPage() {
+		history.back();
+	}
+</script>
+}
