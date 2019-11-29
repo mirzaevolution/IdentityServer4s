@@ -37,7 +37,21 @@ namespace MGR.IDP
                 }
             };
         }
-
+        public static IEnumerable<ApiResource> GetApiResources()
+        {
+            return new List<ApiResource>
+            {
+                new ApiResource("mgr_mainapi","MGR Main API")
+                {
+                    UserClaims =
+                    {
+                        "name",
+                        "role",
+                        "user_department"
+                    }
+                }
+            };
+        }
         public static IEnumerable<Client> GetClients()
         {
             return new List<Client>
@@ -46,7 +60,7 @@ namespace MGR.IDP
                 {
                     AllowAccessTokensViaBrowser = true,
                     AccessTokenType = AccessTokenType.Jwt,
-                    AlwaysIncludeUserClaimsInIdToken = false, //nanti panggil user info endpoint
+                    AlwaysIncludeUserClaimsInIdToken = true, //nanti panggil user info endpoint
                     AllowOfflineAccess = true, //refresh_token
                     AllowedGrantTypes =
                     {
@@ -57,7 +71,8 @@ namespace MGR.IDP
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
-                        "department"
+                        "department",
+                        "mgr_mainapi"
                     },
                     ClientId = "mgr.mainapp",
                     ClientSecrets =
@@ -76,7 +91,10 @@ namespace MGR.IDP
                         "https://localhost:44315/signout-callback-oidc",
                         "https://localhost:44308"
 
-                    }
+                    },
+
+                    RefreshTokenUsage = TokenUsage.OneTimeOnly,
+                    UpdateAccessTokenClaimsOnRefresh = true
                 },
                 new Client
                 {
@@ -109,6 +127,17 @@ namespace MGR.IDP
                         GrantType.Implicit,
                         OidcConstants.GrantTypes.RefreshToken
                     }
+                },
+                new Client
+                {
+                    ClientId = "mgr.mainapi",
+                    ClientSecrets =
+                    {
+                        new Secret("mainapi_secret".Sha256())
+                    },
+                    AllowedScopes = { "mgr_mainapi","offline_access" },
+                    AllowedGrantTypes = GrantTypes.ResourceOwnerPasswordAndClientCredentials,
+                    AllowOfflineAccess = true
                 }
             };
         }

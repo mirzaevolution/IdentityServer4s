@@ -18,6 +18,7 @@ using IdentityModel;
 using IdentityModel.Client;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
+using MGR.MainApp.Helpers;
 
 namespace MGR.MainApp
 {
@@ -55,20 +56,24 @@ namespace MGR.MainApp
                 .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
                 {
                     //url idp
-                    options.Authority = "https://localhost:44385/";
-                    options.ClientId = "mgr.mainapp";
-                    options.ClientSecret = "mainapp_secret";
+                    options.Authority = Configuration["AuthServerBaseAddress"];
+                    options.ClientId = Configuration["ClientId"];
+                    options.ClientSecret = Configuration["ClientSecret"];
                     //utk dapatkan related claim info
-                    options.GetClaimsFromUserInfoEndpoint = true;
+                    options.GetClaimsFromUserInfoEndpoint = false;
                     options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                     //agar id_token tidak hilang saat refresh page
                     options.SaveTokens = true;
                     //setelah autentikasi, akan mendapatkan id_token (Web) dan access_token + refresh_token (API)
+                  
                     options.ResponseType = OidcConstants.ResponseTypes.CodeIdToken;
                     //untuk daftarkan list of scopes/identity resources
+                    
                     options.Scope.Add("offline_access");
                     options.Scope.Add("profile");
                     options.Scope.Add("department");
+                    options.Scope.Add("mgr_mainapi");
+
                     options.ClaimActions.MapJsonKey("name", "name");
                     options.ClaimActions.MapJsonKey("role", "role");
                     options.ClaimActions.MapJsonKey("user_department", "user_department");
@@ -79,9 +84,12 @@ namespace MGR.MainApp
                 {
                     policyOptions.RequireAuthenticatedUser();
                     //policyOptions.RequireRole("Admin");
-                    policyOptions.RequireClaim("role", "Admin", "User");
+                    policyOptions.RequireClaim("role", "Admin");
                 });
             });
+
+            services.AddHttpContextAccessor();
+            services.AddTransient<OAuthHelper>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 

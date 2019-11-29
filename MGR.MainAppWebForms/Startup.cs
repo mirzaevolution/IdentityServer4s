@@ -113,57 +113,55 @@ namespace MGR.MainAppWebForms
                 RedirectUri = "https://localhost:44308/signin-oidc",
                 PostLogoutRedirectUri = "https://localhost:44308",
                 ResponseType = "code id_token token",
-                Scope = "openid profile department offline_access",
-                UseTokenLifetime = false,
+                Scope = "openid profile department mgr_mainapi offline_access",
                 SaveTokens = true,
                 Notifications = new OpenIdConnectAuthenticationNotifications
                 {
-                    SecurityTokenValidated = async n =>
+                    AuthorizationCodeReceived = async openIdMessage =>
                     {
-                        var claims_to_exclude = new[]
+
+                        var claimsToExclude = new[]
                         {
-                            "aud", "iss", "nbf", "exp", "nonce", "iat", "at_hash"
+                           "aud", "iss", "nbf", "exp", "nonce", "iat", "at_hash"
                         };
 
-                        var claims_to_keep =
-                            n.AuthenticationTicket.Identity.Claims
-                            .Where(x => false == claims_to_exclude.Contains(x.Type)).ToList();
-                        claims_to_keep.Add(new Claim("id_token", n.ProtocolMessage.IdToken));
-
-                        if (n.ProtocolMessage.AccessToken != null)
+                        var claims =
+                            openIdMessage.AuthenticationTicket.Identity.Claims
+                            .Where(x => false == claimsToExclude.Contains(x.Type)).ToList();
+                        using (HttpClient client = new HttpClient())
                         {
-                            claims_to_keep.Add(new Claim("access_token", n.ProtocolMessage.AccessToken));
-                            using (HttpClient client = new HttpClient())
+                            client.BaseAddress = new Uri("https://localhost:44385/");
+                            var discoveryResponse = await client.GetDiscoveryDocumentAsync();
+
+                            var responseCodeToken = client.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
                             {
-                                client.BaseAddress = new Uri("https://localhost:44385/");
-                                var discoveryResponse = await client.GetDiscoveryDocumentAsync();
-                                var userInfoResponse = await client.GetUserInfoAsync(new UserInfoRequest
-                                {
-                                    Address = discoveryResponse.UserInfoEndpoint,
-                                    Token = n.ProtocolMessage.AccessToken
-                                });
-                                var userInfoClaims = userInfoResponse.Claims
-                                    .Where(x => x.Type != "sub") // filter sub since we're already getting it from id_token
-                                    .Select(x => new Claim(x.Type, x.Value));
-                                claims_to_keep.AddRange(userInfoClaims);
+                                Address = discoveryResponse.TokenEndpoint,
+                                ClientId = "mgr.mainapp",
+                                ClientSecret = "mainapp_secret",
+                                GrantType = "authorization_code",
+                                Code = openIdMessage.Code,
+                                RedirectUri = openIdMessage.RedirectUri
+                            }).Result;
+
+                            if (!string.IsNullOrEmpty(responseCodeToken.IdentityToken) &&
+                                !string.IsNullOrEmpty(responseCodeToken.AccessToken) &&
+                                !string.IsNullOrEmpty(responseCodeToken.RefreshToken))
+                            {
+                                claims.Add(new Claim("id_token", responseCodeToken.IdentityToken));
+                                claims.Add(new Claim("access_token", responseCodeToken.AccessToken));
+                                claims.Add(new Claim("refresh_token", responseCodeToken.RefreshToken));
                             }
-                            //var userInfoClient = new UserInfoClient(new Uri("https://localhost:44333/core/connect/userinfo"), n.ProtocolMessage.AccessToken);
-                            //var userInfoResponse = await userInfoClient.GetAsync();
-                            //var userInfoClaims = userInfoResponse.Claims
-                            //    .Where(x => x.Item1 != "sub") // filter sub since we're already getting it from id_token
-                            //    .Select(x => new Claim(x.Item1, x.Item2));
-                            //claims_to_keep.AddRange(userInfoClaims);
+                            var claimsIdentity = new ClaimsIdentity(
+                                openIdMessage.AuthenticationTicket.Identity.AuthenticationType,
+                                "name", "role");
+                            claimsIdentity.AddClaims(claims);
+                            openIdMessage.AuthenticationTicket = new Microsoft.Owin.Security.AuthenticationTicket(claimsIdentity, openIdMessage.AuthenticationTicket.Properties);
                         }
-
-                        var ci = new ClaimsIdentity(
-                            n.AuthenticationTicket.Identity.AuthenticationType,
-                            "name", "role");
-                        ci.AddClaims(claims_to_keep);
-
-                        n.AuthenticationTicket = new Microsoft.Owin.Security.AuthenticationTicket(
-                            ci, n.AuthenticationTicket.Properties
-                        );
                     },
+                    //SecurityTokenValidated = async openIdMessage =>
+                    //{
+                        
+                    //},
                     RedirectToIdentityProvider = n =>
                     {
                         if (n.ProtocolMessage.RequestType == OpenIdConnectRequestType.Logout)

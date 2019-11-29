@@ -37,6 +37,9 @@
 						@if (User.Identity.IsAuthenticated)
 						{
 							<li class="nav-item">
+								<a asp-action="Hello" asp-controller="Home" class="nav-link text-dark">Hello Api</a>
+							</li>
+							<li class="nav-item">
 								<a class="nav-link text-dark" href="#">@User.FindFirst(c=>c.Type == "name")?.Value</a>
 							</li>
 							<li class="nav-item">
