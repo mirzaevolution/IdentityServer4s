@@ -9,10 +9,8 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using IdentityServer4;
-using IdentityServer4.Stores;
 
-namespace MGR.AuthServer
+namespace DFX.AuthServer
 {
     public class Startup
     {
@@ -32,14 +30,6 @@ namespace MGR.AuthServer
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
-
-            services.AddIdentityServer()
-                .AddInMemoryIdentityResources(AuthConfigs.GetIdentityResources())
-                .AddInMemoryClients(AuthConfigs.GetClients())
-                .AddTestUsers(AuthConfigs.GetTestUsers())
-                .AddInMemoryApiResources(AuthConfigs.GetApiResources())
-                .AddDeveloperSigningCredential();
-
 
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
@@ -62,7 +52,6 @@ namespace MGR.AuthServer
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
-            app.UseIdentityServer();
 
             app.UseMvc(routes =>
             {
