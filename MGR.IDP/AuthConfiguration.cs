@@ -62,6 +62,7 @@ namespace MGR.IDP
                     AccessTokenType = AccessTokenType.Jwt,
                     AlwaysIncludeUserClaimsInIdToken = true, //nanti panggil user info endpoint
                     AllowOfflineAccess = true, //refresh_token
+                    AccessTokenLifetime = 180,
                     AllowedGrantTypes =
                     {
                         GrantType.Hybrid,

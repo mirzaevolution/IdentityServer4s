@@ -40,7 +40,7 @@ namespace MGR.MainApp
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
-            
+
             //untuk menghapus default claim map dari microsoft
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
@@ -52,7 +52,10 @@ namespace MGR.MainApp
                 //ini utk challenge menggunakan openidconnect
                 options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
             })
-                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+                {
+                    options.AccessDeniedPath = new PathString("/AccessDenied");
+                })
                 .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
                 {
                     //url idp
@@ -73,18 +76,31 @@ namespace MGR.MainApp
                     options.Scope.Add("profile");
                     options.Scope.Add("department");
                     options.Scope.Add("mgr_mainapi");
-
                     options.ClaimActions.MapJsonKey("name", "name");
                     options.ClaimActions.MapJsonKey("role", "role");
                     options.ClaimActions.MapJsonKey("user_department", "user_department");
+
+                    options.Events = new OpenIdConnectEvents
+                    {
+                        OnTokenValidated = tokenInfo =>
+                        {
+                            var roleClaims = tokenInfo.Principal.Claims.Where(c => c.Type == "role").Select(c => new Claim(ClaimTypes.Role, c.Value));
+                            if (roleClaims != null && roleClaims.Any())
+                            {
+                                var claimsIdentity = new ClaimsIdentity(roleClaims);
+                                tokenInfo.Principal.AddIdentity(claimsIdentity);
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("RequireAdminPolicy", policyOptions =>
                 {
                     policyOptions.RequireAuthenticatedUser();
-                    //policyOptions.RequireRole("Admin");
-                    policyOptions.RequireClaim("role", "Admin");
+                    policyOptions.RequireRole("Admin");
+                    //policyOptions.RequireClaim("role", "Admin");
                 });
             });
 
