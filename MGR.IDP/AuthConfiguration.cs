@@ -48,6 +48,22 @@ namespace MGR.IDP
                         "name",
                         "role",
                         "user_department"
+                    },
+                    
+                },
+                new ApiResource("mgr_secondaryapi","MGR Secondary API")
+                {
+                    UserClaims =
+                    {
+                        "name",
+                        "role",
+                        "user_department"
+                    },
+                    //This secrets used for introspection endpoint only.
+                    //=> ReferenceToken
+                    ApiSecrets =
+                    {
+                        new Secret("secondaryapi_secret".Sha256())
                     }
                 }
             };
@@ -99,34 +115,34 @@ namespace MGR.IDP
                 },
                 new Client
                 {
-                    ClientId = "mgr.webform",
-                    ClientSecrets =
-                    {
-                        new Secret("webform_secret".Sha256())
-                    },
-                    AllowAccessTokensViaBrowser = true,
-                    AlwaysIncludeUserClaimsInIdToken = true,
-                    AllowOfflineAccess = true, //refresh_token
-                    //RequireClientSecret = false,
-                    RequireConsent = false,
-                    RedirectUris =
-                    {
-                        "https://localhost:44308/signin-oidc"
-                    },
-                    PostLogoutRedirectUris =
-                    {
-                        "https://localhost:44308"
-                    },
-                    AllowedScopes =
+                    AllowOfflineAccess = true,
+                    AllowedGrantTypes = { GrantType.Hybrid, "refresh_token" },
+                    AllowedScopes = 
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
+                        "mgr_secondaryapi",
                         "department"
                     },
-                    AllowedGrantTypes = 
+                    
+                    AllowAccessTokensViaBrowser = true,
+                    AccessTokenType = AccessTokenType.Reference,
+                    AlwaysIncludeUserClaimsInIdToken = true,
+                    UpdateAccessTokenClaimsOnRefresh = true,
+                    ClientId = "mgr.secondaryapp",
+                    ClientSecrets =
                     {
-                        GrantType.Implicit,
-                        OidcConstants.GrantTypes.RefreshToken
+                        new Secret("secondaryapp_secret".Sha256())
+                    },
+                    RefreshTokenUsage = TokenUsage.OneTimeOnly,
+                    RequireConsent = false,
+                    RedirectUris =
+                    {
+                        "https://localhost:44396/signin-oidc"
+                    },
+                    PostLogoutRedirectUris =
+                    {
+                        "https://localhost:44396/signout-callback-oidc"
                     }
                 },
                 new Client
@@ -137,6 +153,17 @@ namespace MGR.IDP
                         new Secret("mainapi_secret".Sha256())
                     },
                     AllowedScopes = { "mgr_mainapi","offline_access" },
+                    AllowedGrantTypes = GrantTypes.ResourceOwnerPasswordAndClientCredentials,
+                    AllowOfflineAccess = true
+                },
+                 new Client
+                {
+                    ClientId = "mgr.secondaryapi",
+                    ClientSecrets =
+                    {
+                        new Secret("secondaryapi_secret".Sha256())
+                    },
+                    AllowedScopes = { "mgr_secondaryapi","offline_access" },
                     AllowedGrantTypes = GrantTypes.ResourceOwnerPasswordAndClientCredentials,
                     AllowOfflineAccess = true
                 }

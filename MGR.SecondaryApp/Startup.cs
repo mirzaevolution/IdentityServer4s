@@ -10,17 +10,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using IdentityModel;
+using Microsoft.IdentityModel.JsonWebTokens;
 using IdentityModel.Client;
-using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
-using MGR.MainApp.Helpers;
+using System.Security.Claims;
+using MGR.SecondaryApp.Helpers;
 
-namespace MGR.MainApp
+namespace MGR.SecondaryApp
 {
     public class Startup
     {
@@ -34,6 +34,7 @@ namespace MGR.MainApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
             services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
@@ -41,15 +42,9 @@ namespace MGR.MainApp
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            //untuk menghapus default claim map dari microsoft
-            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-
             services.AddAuthentication(options =>
             {
-                //ini utk membuat cookie authentication
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-
-                //ini utk challenge menggunakan openidconnect
                 options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
             })
                 .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
@@ -58,51 +53,34 @@ namespace MGR.MainApp
                 })
                 .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
                 {
-                    //url idp
                     options.Authority = Configuration["AuthServerBaseAddress"];
                     options.ClientId = Configuration["ClientId"];
                     options.ClientSecret = Configuration["ClientSecret"];
-                    //utk dapatkan related claim info
                     options.GetClaimsFromUserInfoEndpoint = false;
-                    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                    //agar id_token tidak hilang saat refresh page
+                    options.ResponseType = OpenIdConnectResponseType.CodeIdToken;
                     options.SaveTokens = true;
-                    //setelah autentikasi, akan mendapatkan id_token (Web) dan access_token + refresh_token (API)
-                  
-                    options.ResponseType = OidcConstants.ResponseTypes.CodeIdToken;
-                    //untuk daftarkan list of scopes/identity resources
-                    
-                    options.Scope.Add("offline_access");
                     options.Scope.Add("profile");
                     options.Scope.Add("department");
-                    options.Scope.Add("mgr_mainapi");
+                    options.Scope.Add("offline_access");
+                    options.Scope.Add("mgr_secondaryapi");
                     options.ClaimActions.MapJsonKey("name", "name");
                     options.ClaimActions.MapJsonKey("role", "role");
                     options.ClaimActions.MapJsonKey("user_department", "user_department");
-
                     options.Events = new OpenIdConnectEvents
                     {
-                        OnUserInformationReceived = tokenInfo =>
+                        OnTokenValidated = tokenInfo =>
                         {
-                            var roleClaims = tokenInfo.Principal.Claims.Where(c => c.Type == "role").Select(c => new Claim(ClaimTypes.Role, c.Value));
-                            if (roleClaims != null && roleClaims.Any())
+                            var claims = tokenInfo.Principal.Claims.Where(c => c.Type == "role").Select(c => new Claim(ClaimTypes.Role, c.Value));
+                            if (claims != null && claims.Any())
                             {
-                                var claimsIdentity = new ClaimsIdentity(roleClaims);
+                                ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims);
                                 tokenInfo.Principal.AddIdentity(claimsIdentity);
                             }
                             return Task.CompletedTask;
                         }
                     };
+                    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 });
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("RequireAdminPolicy", policyOptions =>
-                {
-                    policyOptions.RequireAuthenticatedUser();
-                    policyOptions.RequireRole("Admin");
-                    //policyOptions.RequireClaim("role", "Admin");
-                });
-            });
 
             services.AddHttpContextAccessor();
             services.AddTransient<OAuthHelper>();
@@ -126,9 +104,7 @@ namespace MGR.MainApp
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
-
             app.UseAuthentication();
-
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
