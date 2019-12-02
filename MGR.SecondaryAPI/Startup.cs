@@ -34,7 +34,7 @@ namespace MGR.SecondaryAPI
                     options.Authority = "https://localhost:44385/";
                     options.ApiName = "mgr_secondaryapi";
                     options.ApiSecret = "secondaryapi_secret";
-                    options.EnableCaching = true;
+                    options.EnableCaching = false;
                     options.SaveToken = true;
                 });
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);

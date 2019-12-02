@@ -42,15 +42,7 @@ namespace MGR.SecondaryApp.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-        [Route("/logout")]
-        public IActionResult Logout()
-        {
-            return SignOut
-                (
-                    CookieAuthenticationDefaults.AuthenticationScheme,
-                    OpenIdConnectDefaults.AuthenticationScheme
-                );
-        }
+      
         [Authorize]
         public async Task<IActionResult> Hello()
         {
@@ -81,6 +73,11 @@ namespace MGR.SecondaryApp.Controllers
                     string result = await response.Content.ReadAsStringAsync();
                     return Ok(result);
                 }
+                else if(response.StatusCode == System.Net.HttpStatusCode.Unauthorized || 
+                        response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                {
+                    return Redirect("/AccessDenied");
+                }
                 else
                 {
                     return BadRequest();
@@ -92,6 +89,49 @@ namespace MGR.SecondaryApp.Controllers
         public IActionResult AccessDenied()
         {
             return View();
+        }
+
+
+        [Route("/logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            using(HttpClient client = new HttpClient())
+            {
+                string authBaseAddress = _configuration["AuthServerBaseAddress"];
+                string clientId = _configuration["ClientId"];
+                string clientSecret = _configuration["ClientSecret"];
+                string accessToken = await HttpContext.GetTokenAsync("access_token");
+                string refreshToken = await HttpContext.GetTokenAsync("refresh_token");
+                client.BaseAddress = new Uri(authBaseAddress);
+                //revoking access token
+                DiscoveryDocumentResponse documentResponse = await client.GetDiscoveryDocumentAsync();
+                TokenRevocationResponse accessTokenRevokeResponse = await client.RevokeTokenAsync(new TokenRevocationRequest
+                {
+                    Address = documentResponse.RevocationEndpoint,
+                    ClientId = clientId,
+                    ClientSecret = clientSecret,
+                    Token = accessToken,
+                    TokenTypeHint = "access_token"
+                });
+
+                //revoking refresh token
+                TokenRevocationResponse refreshTokenResponse = await client.RevokeTokenAsync(new TokenRevocationRequest
+                {
+                    Address = documentResponse.RevocationEndpoint,
+                    ClientId = clientId,
+                    ClientSecret = clientSecret,
+                    Token = refreshToken,
+                    TokenTypeHint = "refresh_token"
+                });
+
+            }
+            return RedirectToAction("Index", "Home");
+            //return SignOut
+            //    (
+            //        CookieAuthenticationDefaults.AuthenticationScheme,
+            //        OpenIdConnectDefaults.AuthenticationScheme
+            //    );
         }
     }
 }
