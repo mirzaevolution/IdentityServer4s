@@ -28,7 +28,7 @@ namespace MGR.MainApp.Controllers
         public IActionResult Index()
         {
             return View();
-        }
+        } 
         [Authorize(Policy = "RequireAdminPolicy")]
         //[Authorize]
         public IActionResult Privacy()
@@ -63,6 +63,17 @@ namespace MGR.MainApp.Controllers
                 string clientSecret = _configuration["ClientSecret"];
                 string token = await HttpContext.GetTokenAsync("access_token");
                 string refreshToken = await HttpContext.GetTokenAsync("refresh_token");
+
+                string expireAt = await HttpContext.GetTokenAsync("expires_at");
+                DateTime expiresAtDateTime;
+                bool expiresAtParseResult = DateTime.TryParse(expireAt, out expiresAtDateTime);
+                if(string.IsNullOrEmpty(expireAt) || 
+                   !expiresAtParseResult ||
+                   expiresAtDateTime.AddMinutes(-2).ToUniversalTime() < DateTime.UtcNow)
+                {
+                    var tokenResponse = await _oauthHelper.RenewToken(authAddress, clientId, clientSecret);
+                    token = tokenResponse.AccessToken;
+                }
                 client.BaseAddress = new Uri(baseAddress);
                 client.SetBearerToken(token);
                 var response = await client.GetAsync("api/hello");
@@ -71,23 +82,17 @@ namespace MGR.MainApp.Controllers
                     string result = await response.Content.ReadAsStringAsync();
                     return Ok(result);
                 }
-                else if(response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    var tokenResponse = await _oauthHelper.RenewToken(authAddress, clientId,clientSecret);
-                    response = await client.GetAsync("api/hello");
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string result = await response.Content.ReadAsStringAsync();
-                        return Ok(result);
-                    }
-                    else
-                        return StatusCode(500);
-                }
                 else
                 {
                     return BadRequest();
                 }
             }
+        }
+
+        [Route("/AccessDenied")]
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
     }
 }
