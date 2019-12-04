@@ -28,7 +28,7 @@ namespace MGR.MainApp.Controllers
         public IActionResult Index()
         {
             return View();
-        }
+        } 
         [Authorize(Policy = "RequireAdminPolicy")]
         //[Authorize]
         public IActionResult Privacy()

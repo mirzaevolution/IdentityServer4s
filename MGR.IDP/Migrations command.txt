@@ -1,0 +1,7 @@
+﻿Add-Migration InitialPersistedGrantDbMigration -c PersistedGrantDbContext -o Migrations/IdentityServer/PersistedGrantDb
+Add-Migration InitialConfigurationDbMigration -c ConfigurationDbContext -o Migrations/IdentityServer/ConfigurationDb
+
+
+
+Update-Database -Context PersistedGrantDbContext -v
+Update-Database -Context ConfigurationDbContext -v

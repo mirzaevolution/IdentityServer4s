@@ -126,12 +126,12 @@ namespace MGR.SecondaryApp.Controllers
                 });
 
             }
-            return RedirectToAction("Index", "Home");
-            //return SignOut
-            //    (
-            //        CookieAuthenticationDefaults.AuthenticationScheme,
-            //        OpenIdConnectDefaults.AuthenticationScheme
-            //    );
+            //return RedirectToAction("Index", "Home");
+            return SignOut
+                (
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    OpenIdConnectDefaults.AuthenticationScheme
+                );
         }
     }
 }

@@ -99,8 +99,8 @@ namespace MGR.MainApp
                 options.AddPolicy("RequireAdminPolicy", policyOptions =>
                 {
                     policyOptions.RequireAuthenticatedUser();
-                    policyOptions.RequireRole("Admin");
-                    //policyOptions.RequireClaim("role", "Admin");
+                    //policyOptions.RequireRole("Admin");
+                    policyOptions.RequireClaim("role", "Admin");
                 });
             });
 
