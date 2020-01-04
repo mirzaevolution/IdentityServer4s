@@ -42,7 +42,9 @@ namespace MGR.IDP
             {
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
+            
             services.AddScoped<IMirzaCoreRepository, MirzaCoreRepository>();
+            
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
             services.AddIdentityServer()

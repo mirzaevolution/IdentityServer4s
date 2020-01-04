@@ -7,7 +7,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MGR.IDP.Entities
 {
-
     public class User
     {
         public string SubjectId { get; set; } = Guid.NewGuid().ToString();

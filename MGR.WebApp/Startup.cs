@@ -49,9 +49,9 @@ namespace MGR.WebApp
             .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
             {
-                options.Authority = "https://localhost:44314/";
-                options.ClientId = "mgr.webapp";
-                options.ClientSecret = "webapp_secret";
+                options.Authority = Configuration["AuthServer"];
+                options.ClientId = Configuration["AuthServerClientId"];
+                options.ClientSecret = Configuration["AuthServerClientSecret"];
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.ResponseType = OidcConstants.ResponseTypes.CodeIdTokenToken;
                 options.SaveTokens = true;
