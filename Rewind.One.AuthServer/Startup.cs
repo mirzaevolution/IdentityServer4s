@@ -8,7 +8,12 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
+using Microsoft.AspNetCore.Authentication;
+using System.IdentityModel;
+using System.IdentityModel.Tokens.Jwt;
+using IdentityModel;
+using IdentityServer4;
+using IdentityServer4.Models;
 namespace Rewind.One.AuthServer
 {
     public class Startup
@@ -23,6 +28,13 @@ namespace Rewind.One.AuthServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddIdentityServer()
+                .AddInMemoryIdentityResources(InMemoryAuthConfiguration.GetIdentityResources())
+                .AddInMemoryApiResources(InMemoryAuthConfiguration.GetApiResources())
+                .AddInMemoryClients(InMemoryAuthConfiguration.GetClients())
+                .AddTestUsers(InMemoryAuthConfiguration.GetTestUsers())
+                .AddDeveloperSigningCredential();
+
             services.AddControllersWithViews();
         }
 
@@ -41,10 +53,11 @@ namespace Rewind.One.AuthServer
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseIdentityServer();
+
+
 
             app.UseEndpoints(endpoints =>
             {

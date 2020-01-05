@@ -8,6 +8,12 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using IdentityModel;
+using static IdentityModel.OidcConstants;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Rewind.One.WebApp
 {
@@ -23,7 +29,36 @@ namespace Rewind.One.WebApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+            }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
+            {
+                options.Authority = Configuration["AuthServer"];
+                options.ClientId = Configuration["ClientId"];
+                options.ClientSecret = Configuration["ClientSecret"];
+                options.SaveTokens = true;
+                options.Scope.Add(StandardScopes.OpenId);
+                options.Scope.Add(StandardScopes.Profile);
+                options.Scope.Add(StandardScopes.Email);
+                options.Scope.Add(StandardScopes.Phone);
+                options.Scope.Add("offline_access");
+                options.Scope.Add("crypto_api");
+                options.Scope.Add("dev_environment");
+                options.GetClaimsFromUserInfoEndpoint = false;
+                options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.ResponseType = ResponseTypes.CodeIdTokenToken;
+
+                options.ClaimActions.MapJsonKey(JwtClaimTypes.Name, JwtClaimTypes.Name);
+                options.ClaimActions.MapJsonKey(JwtClaimTypes.Email, JwtClaimTypes.Name);
+                options.ClaimActions.MapJsonKey(JwtClaimTypes.PhoneNumber, JwtClaimTypes.PhoneNumber);
+                options.ClaimActions.MapJsonKey("dev_prog_lang", "dev_prog_lang");
+                options.ClaimActions.MapJsonKey("dev_platform", "dev_platform");
+            });
+            services.AddMvc().SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -43,7 +78,7 @@ namespace Rewind.One.WebApp
             app.UseStaticFiles();
 
             app.UseRouting();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
