@@ -44,7 +44,7 @@ namespace MGR.WebApp.Controllers
 
         [Authorize]
         public async Task<IActionResult> Claims()
-            {
+        {
             List<Tuple<string, string>> claims = new List<Tuple<string, string>>();
             string idToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.IdToken);
             string accessToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
@@ -54,24 +54,18 @@ namespace MGR.WebApp.Controllers
             claims.Add(new Tuple<string, string>(OpenIdConnectParameterNames.RefreshToken, refreshToken));
             claims.AddRange(User.Claims.Select(x => new Tuple<string, string>(x.Type, x.Value)));
 
-          
+
 
             return View(claims);
         }
 
-        [Authorize, Route("/Logout")]
-        public IActionResult Logout()
-        {
-            return SignOut(CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
-
-        }
 
         [Authorize]
         [HttpGet("/getcoreapidata")]
         public async Task<IActionResult> GetCoreApiData()
         {
             string access_token = await HttpContext.GetTokenAsync("access_token");
-            using(HttpClient client = new HttpClient())
+            using (HttpClient client = new HttpClient())
             {
                 client.SetBearerToken(access_token);
                 HttpResponseMessage response = await client.GetAsync("https://localhost:44331/api/hello");
@@ -80,9 +74,9 @@ namespace MGR.WebApp.Controllers
                     string message = await response.Content.ReadAsStringAsync();
                     return Ok(message);
                 }
-                else if(response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    var tokenResponse =  await _identityHelpers.RenewToken();
+                    var tokenResponse = await _identityHelpers.RenewToken();
 
                     client.SetBearerToken(tokenResponse.AccessToken);
                     response = await client.GetAsync("https://localhost:44331/api/hello");
@@ -99,5 +93,14 @@ namespace MGR.WebApp.Controllers
                 }
             }
         }
+
+
+        [Authorize, Route("/Logout")]
+        public IActionResult Logout()
+        {
+            return SignOut(CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
+
+        }
+
     }
 }

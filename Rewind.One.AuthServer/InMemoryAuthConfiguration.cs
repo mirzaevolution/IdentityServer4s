@@ -75,7 +75,7 @@ namespace Rewind.One.AuthServer
                         new Secret("apisecret".Sha256())
                     },
                     AllowedGrantTypes = GrantTypes.ResourceOwnerPasswordAndClientCredentials,
-                    AllowedCorsOrigins = 
+                    AllowedCorsOrigins =
                     {
                         "*"
                     },
@@ -90,7 +90,7 @@ namespace Rewind.One.AuthServer
                 //web client
                 new Client
                 {
-                    ClientId = "rewin_crypto_webapp",
+                    ClientId = "rewind_crypto_webapp",
                     ClientSecrets =
                     {
                         new Secret("webappsecret".Sha256())
@@ -114,11 +114,11 @@ namespace Rewind.One.AuthServer
                     UpdateAccessTokenClaimsOnRefresh = true,
                     RedirectUris =
                     {
-                        "https://localhost:44395/signin-oidc"
+                        "https://localhost:44388/signin-oidc"
                     },
                     PostLogoutRedirectUris =
                     {
-                        "https://localhost:44395/signout-callback-oidc"
+                        "https://localhost:44388/signout-callback-oidc"
                     }
                 }
             };

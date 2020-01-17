@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using IdentityModel;
 using static IdentityModel.OidcConstants;
 using System.IdentityModel.Tokens.Jwt;
+using Rewind.One.WebApp.Helpers;
+using IdentityModel.Client;
 
 namespace Rewind.One.WebApp
 {
@@ -52,12 +54,21 @@ namespace Rewind.One.WebApp
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.ResponseType = ResponseTypes.CodeIdTokenToken;
 
-                options.ClaimActions.MapJsonKey(JwtClaimTypes.Name, JwtClaimTypes.Name);
-                options.ClaimActions.MapJsonKey(JwtClaimTypes.Email, JwtClaimTypes.Name);
-                options.ClaimActions.MapJsonKey(JwtClaimTypes.PhoneNumber, JwtClaimTypes.PhoneNumber);
-                options.ClaimActions.MapJsonKey("dev_prog_lang", "dev_prog_lang");
-                options.ClaimActions.MapJsonKey("dev_platform", "dev_platform");
+                //options.ClaimActions.MapJsonKey(JwtClaimTypes.Name, JwtClaimTypes.Name);
+                //options.ClaimActions.MapJsonKey(JwtClaimTypes.Email, JwtClaimTypes.Name);
+                //options.ClaimActions.MapJsonKey(JwtClaimTypes.PhoneNumber, JwtClaimTypes.PhoneNumber);
+                //options.ClaimActions.MapJsonKey("dev_prog_lang", "dev_prog_lang");
+                //options.ClaimActions.MapJsonKey("dev_platform", "dev_platform");
+                options.ClaimActions.MapAll();
             });
+            services.AddHttpContextAccessor();
+            services.AddTransient<OpenIdConnectOAuthHelper>();
+            services.AddHttpClient("AuthorizedHttpClient", async (serviceProvider, options) =>
+             {
+                 var helper = serviceProvider.GetRequiredService<OpenIdConnectOAuthHelper>();
+                 string token = await helper.DetectAndGetToken();
+                 options.SetBearerToken(token);
+             });
             services.AddMvc().SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
         }
 
