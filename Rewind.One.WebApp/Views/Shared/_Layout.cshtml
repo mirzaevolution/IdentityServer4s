@@ -31,7 +31,13 @@
 						@if (User.Identity.IsAuthenticated)
 						{
 							<li class="nav-item">
-								<a class="nav-link text-light" asp-action="GetApiData" asp-controller="Home">Protected API Data</a>
+								<a class="nav-link text-light" asp-action="GetApiData" asp-controller="Home">Api Data</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link text-light" asp-action="GetApiDataWithoutExpirationDetector" asp-controller="Home">Api Data Without Expiration Detector</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link text-light" asp-action="RevokeTokens" asp-controller="Home">Revoke Tokens</a>
 							</li>
 							<li class="nav-item">
 								<a class="nav-link text-light" href="/logout">Logout</a>

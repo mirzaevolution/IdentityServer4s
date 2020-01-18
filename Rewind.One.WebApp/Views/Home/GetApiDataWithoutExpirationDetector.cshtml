@@ -1,0 +1,14 @@
+﻿
+@{
+	ViewData["Title"] = "API Data";
+}
+
+<h4>Data from Protected API Endpoint</h4>
+<br />
+@if (!string.IsNullOrEmpty(ViewBag.Message))
+{
+	<div>
+		Message: <span class="text-primary">@ViewBag.Message</span>
+	</div>
+}
+

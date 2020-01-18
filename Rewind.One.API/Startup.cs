@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using IdentityServer4.AccessTokenValidation;
 
 namespace Rewind.One.API
 {
@@ -28,12 +29,20 @@ namespace Rewind.One.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+            services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+                .AddIdentityServerAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme,
+                 jwtOptions => 
                  {
-                     options.Authority = Configuration["AuthServer"];
-                     options.Audience = Configuration["AuthServerAudience"];
-                     options.SaveToken = true;
+                     jwtOptions.Authority = Configuration["AuthServer"];
+                     jwtOptions.Audience = Configuration["AuthServerAudience"];
+                     jwtOptions.SaveToken = true;
+                 },
+                 referenceOptions =>
+                 {
+                     referenceOptions.Authority = Configuration["AuthServer"];
+                     referenceOptions.ClientId = Configuration["AuthServerAudience"];
+                     referenceOptions.ClientSecret = Configuration["AuthServerAudienceSecret"];
+                     referenceOptions.SaveToken = true;
                  });
             services.AddControllers();
         }

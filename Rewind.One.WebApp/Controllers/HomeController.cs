@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
@@ -23,15 +25,18 @@ namespace Rewind.One.WebApp.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly OpenIdConnectOAuthHelper _authHelper;
-        private IHttpClientFactory _httpClientFactory;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
         public HomeController(
             OpenIdConnectOAuthHelper authHelper,
             ILogger<HomeController> logger,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            IConfiguration configuration)
         {
             _authHelper = authHelper;
             _logger = logger;
             _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         public IActionResult Index()
@@ -75,36 +80,6 @@ namespace Rewind.One.WebApp.Controllers
         public async Task<IActionResult> GetApiData()
         {
             ViewBag.Message = "";
-            //using (HttpClient client = new HttpClient())
-            //{
-            //    string accessToken = await _authHelper.DetectAndGetToken();
-
-            //    client.SetBearerToken(accessToken);
-            //    HttpResponseMessage response = await client.GetAsync("https://localhost:44356/api/hello");
-            //    if (response.IsSuccessStatusCode)
-            //    {
-            //        string message = await response.Content.ReadAsStringAsync();
-            //        HelloApiResponse messageObj = JsonConvert.DeserializeObject<HelloApiResponse>(message);
-
-            //        try
-            //        {
-            //            ViewBag.Message = messageObj.Message;
-
-            //        }
-            //        catch
-            //        {
-            //            ViewBag.Message = $"{response.StatusCode} - {response.ReasonPhrase}";
-
-            //        }
-
-            //    }
-
-            //    else
-            //    {
-            //        ViewBag.Message = $"{response.StatusCode} - {response.ReasonPhrase}";
-
-            //    }
-            //}
             HttpClient client = _httpClientFactory.CreateClient("AuthorizedHttpClient");
             HttpResponseMessage response = await client.GetAsync("https://localhost:44356/api/hello");
             if (response.IsSuccessStatusCode)
@@ -127,11 +102,98 @@ namespace Rewind.One.WebApp.Controllers
 
             else
             {
-                ViewBag.Message = $"{response.StatusCode} - {response.ReasonPhrase}";
+                //ViewBag.Message = $"{response.StatusCode} - {response.ReasonPhrase}";
+                return Redirect("/AccessDenied");
 
             }
 
             return View();
+        }
+
+        [Authorize]
+        public async Task<IActionResult> GetApiDataWithoutExpirationDetector()
+        {
+            ViewBag.Message = "";
+            HttpClient client = _httpClientFactory.CreateClient("GeneralHttpClient");
+            string accessToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                client.SetBearerToken(accessToken);
+            }
+            HttpResponseMessage response = await client.GetAsync("https://localhost:44356/api/hello");
+            if (response.IsSuccessStatusCode)
+            {
+                string message = await response.Content.ReadAsStringAsync();
+                HelloApiResponse messageObj = JsonConvert.DeserializeObject<HelloApiResponse>(message);
+
+                try
+                {
+                    ViewBag.Message = messageObj.Message;
+
+                }
+                catch
+                {
+                    return Redirect("/AccessDenied");
+
+                }
+
+            }
+
+            else
+            {
+                return Redirect("/AccessDenied");
+
+            }
+            return View();
+        }
+
+        [Route("/AccessDenied")]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
+        [Authorize]
+        public async Task<IActionResult> RevokeTokens()
+        {
+            string accessToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+            string refeshToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.RefreshToken);
+            if(!string.IsNullOrEmpty(accessToken) && !string.IsNullOrEmpty(refeshToken))
+            {
+                string baseAddress = _configuration["AuthServer"];
+                string clientId = _configuration["ClientId"];
+                string clientSecret = _configuration["ClientSecret"];
+                HttpClient client = _httpClientFactory.CreateClient("GeneralHttpClient");
+                DiscoveryDocumentResponse discoveryDocumentResponse =
+                    await client.GetDiscoveryDocumentAsync(
+                            baseAddress
+                        );
+                if(discoveryDocumentResponse.HttpStatusCode == HttpStatusCode.OK)
+                {
+                    var accessTokenRevokeResult = await client.RevokeTokenAsync(new TokenRevocationRequest
+                    {
+                        Address = discoveryDocumentResponse.RevocationEndpoint,
+                        ClientId = clientId,
+                        ClientSecret = clientSecret,
+                        Token = accessToken
+                        
+                    });
+                    //if (!accessTokenRevokeResult.IsError)
+                    //{
+                    //    var refreshTokenRevokeResult = await client.RevokeTokenAsync(new TokenRevocationRequest
+                    //    {
+                    //        Address = discoveryDocumentResponse.RevocationEndpoint,
+                    //        ClientId = clientId,
+                    //        ClientSecret = clientSecret,
+                    //        Token = refeshToken
+
+                    //    });
+
+                    //}
+                }
+            }
+
+            return RedirectToAction("Index", "Home");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

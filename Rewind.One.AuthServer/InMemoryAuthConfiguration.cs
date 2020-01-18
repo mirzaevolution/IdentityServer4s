@@ -3,6 +3,7 @@ using System.Security.Claims;
 using IdentityServer4.Models;
 using IdentityServer4.Test;
 using IdentityModel;
+using System;
 
 namespace Rewind.One.AuthServer
 {
@@ -22,6 +23,8 @@ namespace Rewind.One.AuthServer
         #region API Related Constants
         private const string API_CRYPTO_NAME = "crypto_api";
         private const string API_CRYPTO_DESC = "Crypto Api";
+        private const string API_CRYPTO_SECRET = "cryptoapisecret";
+
         #endregion
 
 
@@ -37,6 +40,10 @@ namespace Rewind.One.AuthServer
                         JwtClaimTypes.Email,
                         CLAIM_DEV_LANG_NAME,
                         CLAIM_DEV_PLATFORM_NAME
+                    },
+                    ApiSecrets =
+                    {
+                        new Secret(API_CRYPTO_SECRET.Sha256())
                     }
                 }
             };
@@ -105,6 +112,7 @@ namespace Rewind.One.AuthServer
                         API_CRYPTO_NAME,
                         SCOPE_DEV_ENV_NAME
                     },
+                    AccessTokenType = AccessTokenType.Reference,
                     AllowAccessTokensViaBrowser = true,
                     AlwaysIncludeUserClaimsInIdToken = true,
                     RequireConsent = false,
