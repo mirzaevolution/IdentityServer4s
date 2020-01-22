@@ -10,40 +10,24 @@ namespace Rewind.One.AuthServer
     public class InMemoryAuthConfiguration
     {
 
-        #region Scope Related Constants
-        private const string SCOPE_DEV_ENV_NAME = "dev_environment";
-        private const string SCOPE_DEV_ENV_DESC = "Developer Enviroment Scope List";
-        #endregion
-
-        #region Claim Related Constants
-        private const string CLAIM_DEV_PLATFORM_NAME = "dev_platform";
-        private const string CLAIM_DEV_LANG_NAME = "dev_prog_lang";
-        #endregion
-
-        #region API Related Constants
-        private const string API_CRYPTO_NAME = "crypto_api";
-        private const string API_CRYPTO_DESC = "Crypto Api";
-        private const string API_CRYPTO_SECRET = "cryptoapisecret";
-
-        #endregion
 
 
         public static List<ApiResource> GetApiResources()
         {
             return new List<ApiResource>
             {
-                new ApiResource(API_CRYPTO_NAME,API_CRYPTO_DESC)
+                new ApiResource(Constants.API_CRYPTO_NAME,Constants.API_CRYPTO_DESC)
                 {
                     UserClaims =
                     {
                         JwtClaimTypes.Name,
                         JwtClaimTypes.Email,
-                        CLAIM_DEV_LANG_NAME,
-                        CLAIM_DEV_PLATFORM_NAME
+                        Constants.CLAIM_DEV_LANG_NAME,
+                        Constants.CLAIM_DEV_PLATFORM_NAME
                     },
                     ApiSecrets =
                     {
-                        new Secret(API_CRYPTO_SECRET.Sha256())
+                        new Secret(Constants.API_CRYPTO_SECRET.Sha256())
                     }
                 }
             };
@@ -58,13 +42,13 @@ namespace Rewind.One.AuthServer
                 new IdentityResources.Phone(),
                 new IdentityResource()
                 {
-                    Name = SCOPE_DEV_ENV_NAME,
-                    Description = SCOPE_DEV_ENV_DESC,
-                    DisplayName = SCOPE_DEV_ENV_DESC,
+                    Name = Constants.SCOPE_DEV_ENV_NAME,
+                    Description = Constants.SCOPE_DEV_ENV_DESC,
+                    DisplayName = Constants.SCOPE_DEV_ENV_DESC,
                     UserClaims =
                     {
-                        CLAIM_DEV_PLATFORM_NAME,
-                        CLAIM_DEV_LANG_NAME
+                        Constants.CLAIM_DEV_PLATFORM_NAME,
+                        Constants.CLAIM_DEV_LANG_NAME
                     }
                 }
             };
@@ -89,7 +73,7 @@ namespace Rewind.One.AuthServer
                     AllowedScopes =
                     {
                         OidcConstants.StandardScopes.OfflineAccess,
-                        API_CRYPTO_NAME
+                        Constants.API_CRYPTO_NAME
                     },
                     AllowOfflineAccess = true
                 },
@@ -109,8 +93,8 @@ namespace Rewind.One.AuthServer
                         OidcConstants.StandardScopes.Profile,
                         OidcConstants.StandardScopes.Email,
                         OidcConstants.StandardScopes.Phone,
-                        API_CRYPTO_NAME,
-                        SCOPE_DEV_ENV_NAME
+                        Constants.API_CRYPTO_NAME,
+                        Constants.SCOPE_DEV_ENV_NAME
                     },
                     AccessTokenType = AccessTokenType.Reference,
                     AllowAccessTokensViaBrowser = true,
@@ -146,8 +130,8 @@ namespace Rewind.One.AuthServer
                         new Claim(JwtClaimTypes.Name,"Mirza Ghulam Rasyid"),
                         new Claim(JwtClaimTypes.Email, "ghulamcyber@hotmail.com"),
                         new Claim(JwtClaimTypes.PhoneNumber, "085806377218"),
-                        new Claim(CLAIM_DEV_LANG_NAME,"netcore"),
-                        new Claim(CLAIM_DEV_PLATFORM_NAME,"win32")
+                        new Claim(Constants.CLAIM_DEV_LANG_NAME,"netcore"),
+                        new Claim(Constants.CLAIM_DEV_PLATFORM_NAME,"win32")
                     }
                 }
             };

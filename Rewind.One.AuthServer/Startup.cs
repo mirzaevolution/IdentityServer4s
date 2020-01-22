@@ -14,6 +14,9 @@ using System.IdentityModel.Tokens.Jwt;
 using IdentityModel;
 using IdentityServer4;
 using IdentityServer4.Models;
+using Rewind.One.AuthServer.Entities;
+using Microsoft.EntityFrameworkCore;
+
 namespace Rewind.One.AuthServer
 {
     public class Startup
@@ -28,6 +31,11 @@ namespace Rewind.One.AuthServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<AuthServerContext>(options =>
+            {
+                options.UseSqlServer(Configuration.GetConnectionString("Default"));
+            });
+
             services.AddIdentityServer()
                 .AddInMemoryIdentityResources(InMemoryAuthConfiguration.GetIdentityResources())
                 .AddInMemoryApiResources(InMemoryAuthConfiguration.GetApiResources())
