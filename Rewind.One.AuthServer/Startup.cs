@@ -16,7 +16,7 @@ using IdentityServer4;
 using IdentityServer4.Models;
 using Rewind.One.AuthServer.Entities;
 using Microsoft.EntityFrameworkCore;
-
+using Rewind.One.AuthServer.Extensions;
 namespace Rewind.One.AuthServer
 {
     public class Startup
@@ -40,18 +40,21 @@ namespace Rewind.One.AuthServer
                 .AddInMemoryIdentityResources(InMemoryAuthConfiguration.GetIdentityResources())
                 .AddInMemoryApiResources(InMemoryAuthConfiguration.GetApiResources())
                 .AddInMemoryClients(InMemoryAuthConfiguration.GetClients())
-                .AddTestUsers(InMemoryAuthConfiguration.GetTestUsers())
+                //.AddTestUsers(InMemoryAuthConfiguration.GetTestUsers())
+                .AddPersistentUserService()
                 .AddDeveloperSigningCredential();
 
             services.AddControllersWithViews();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, AuthServerContext context)
         {
+            context.Database.Migrate();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                context.CreateInitUsers();
             }
             else
             {

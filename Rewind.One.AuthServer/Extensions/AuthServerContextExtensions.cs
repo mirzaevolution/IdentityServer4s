@@ -26,7 +26,8 @@ namespace Rewind.One.AuthServer.Extensions
                         new AppUserClaims(JwtClaimTypes.PhoneNumber, "085806377218"),
                         new AppUserClaims(Constants.CLAIM_DEV_LANG_NAME,"netcore"),
                         new AppUserClaims(Constants.CLAIM_DEV_PLATFORM_NAME,"win32")
-                    }
+                    },
+                    IsActive = true
                 };
                 context.Users.Add(user);
                 context.SaveChanges();
