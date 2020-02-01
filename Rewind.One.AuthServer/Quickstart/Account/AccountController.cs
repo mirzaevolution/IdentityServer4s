@@ -17,6 +17,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Rewind.One.AuthServer.Services;
+using Rewind.One.AuthServer.Entities;
+using System.Collections.Generic;
 
 namespace IdentityServer4.Quickstart.UI
 {
@@ -54,6 +56,110 @@ namespace IdentityServer4.Quickstart.UI
             _events = events;
             _authServerService = authServerService;
         }
+
+        [HttpGet]
+        public IActionResult Register(string returnUrl = "~/")
+        {
+            return View(new RegisterViewModel
+            {
+                ReturnUrl = returnUrl
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                AppUser appUser = new AppUser
+                {
+                    FullName = model.FullName,
+                    UserName = model.UserName,
+                    Password = model.Password.Sha256(),
+                    IsActive = true,
+                    Claims = new List<AppUserClaims>
+                    {
+                        new AppUserClaims(JwtClaimTypes.Name,model.FullName),
+                        new AppUserClaims(JwtClaimTypes.Email, model.UserName),
+                        new AppUserClaims(JwtClaimTypes.PhoneNumber, model.Phone)
+                    }
+                };
+                bool success = await _authServerService.AddUser(appUser);
+                if (success)
+                {
+                    await HttpContext.SignInAsync(new IdentityServerUser(appUser.Id) { DisplayName = model.UserName });
+                    if (Url.IsLocalUrl(model.ReturnUrl))
+                    {
+                        return Redirect(model.ReturnUrl);
+                    }
+                    else if (string.IsNullOrEmpty(model.ReturnUrl))
+                    {
+                        return Redirect("~/");
+                    }
+                    else
+                    {
+                        // user might have clicked on a malicious link - should be logged
+                        throw new Exception("invalid return URL");
+                    }
+                }
+                throw new InvalidOperationException("Error while creating user");
+            }
+            return View(model);
+        }
+
+        [HttpGet]
+        public IActionResult RegisterExternal(string userId, string provider, string returnUrl)
+        {
+            if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(provider) && !string.IsNullOrEmpty(returnUrl))
+            {
+                return View(new RegisterExternalViewModel
+                {
+                    UserName = userId,
+                    Provider = provider,
+                    ReturnUrl = returnUrl
+                });
+            }
+            throw new ArgumentException("Parameter(s) supplied are invalid");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RegisterExternal(RegisterExternalViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+            AppUser appUser = new AppUser
+            {
+                FullName = model.FullName,
+                UserName = model.UserName,
+                IsActive = true
+            };
+            appUser.Claims.Add(new AppUserClaims(JwtClaimTypes.Id, model.UserName));
+            appUser.Claims.Add(new AppUserClaims(JwtClaimTypes.Name, model.FullName));
+            appUser.Claims.Add(new AppUserClaims(JwtClaimTypes.PhoneNumber, model.Phone));
+            appUser.Logins.Add(new AppUserLogin()
+            {
+                ProviderKey = model.Provider,
+                ProviderName = model.Provider
+            });
+            await _authServerService.AddUser(appUser);
+
+            if (Url.IsLocalUrl(model.ReturnUrl))
+            {
+                return Redirect(model.ReturnUrl);
+            }
+            else if (string.IsNullOrEmpty(model.ReturnUrl))
+            {
+                return Redirect("~/");
+            }
+            else
+            {
+                // user might have clicked on a malicious link - should be logged
+                throw new Exception("invalid return URL");
+            }
+        }
+
 
         /// <summary>
         /// Entry point into the login workflow

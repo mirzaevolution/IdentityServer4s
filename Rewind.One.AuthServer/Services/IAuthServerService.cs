@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Rewind.One.AuthServer.Entities;
 namespace Rewind.One.AuthServer.Services
 {
     public interface IAuthServerService
     {
-        Task AddUser(AppUser user);
+        Task<bool> AddUser(AppUser user);
         Task AddUserClaim(string userId, AppUserClaims userClaim);
         Task AddUserLogin(string userId, AppUserLogin userLogin);
         Task<AppUser> GetUserById(string userId);

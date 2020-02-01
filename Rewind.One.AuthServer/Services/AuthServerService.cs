@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Rewind.One.AuthServer.Entities;
 using Microsoft.EntityFrameworkCore;
 using IdentityServer4.Models;
+using System.Security.Claims;
 
 namespace Rewind.One.AuthServer.Services
 {
@@ -16,10 +17,11 @@ namespace Rewind.One.AuthServer.Services
             _context = context;
         }
 
-        public async Task AddUser(AppUser user)
+        public async Task<bool> AddUser(AppUser user)
         {
             _context.Add(user);
             var total = await _context.SaveChangesAsync();
+            return total > 0;
         }
 
         public async Task AddUserClaim(string userId, AppUserClaims userClaim)
@@ -46,6 +48,7 @@ namespace Rewind.One.AuthServer.Services
             _context.Users.Add(user);
             var total = await _context.SaveChangesAsync();
         }
+
 
         public async Task<IEnumerable<AppUserClaims>> GetClaimsByUserId(string userId)
         {
@@ -101,10 +104,6 @@ namespace Rewind.One.AuthServer.Services
 
             var user = await _context.Users.Include(c => c.Logins).Include(c => c.Claims).FirstOrDefaultAsync(c => c.Id == userId);
 
-            if (user == null)
-            {
-                throw new Exception("User not found");
-            }
             return user;
         }
 
@@ -113,10 +112,6 @@ namespace Rewind.One.AuthServer.Services
 
             var user = await _context.Users.Include(c => c.Logins).Include(c => c.Claims).FirstOrDefaultAsync(c => c.UserName == username);
 
-            if (user == null)
-            {
-                throw new Exception("User not found");
-            }
             return user;
         }
 
