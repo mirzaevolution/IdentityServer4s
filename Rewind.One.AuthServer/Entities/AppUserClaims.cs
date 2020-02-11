@@ -14,5 +14,6 @@ namespace Rewind.One.AuthServer.Entities
         public string UserId { get; set; }
         public string ClaimType { get; set; }
         public string ClaimValue { get; set; }
+        public virtual AppUser User { get; set; }
     }
 }

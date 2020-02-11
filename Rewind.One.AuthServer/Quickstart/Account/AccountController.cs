@@ -129,13 +129,24 @@ namespace IdentityServer4.Quickstart.UI
             {
                 return View(model);
             }
+
             AppUser appUser = new AppUser
             {
+                Id = Guid.NewGuid().ToString(),
                 FullName = model.FullName,
                 UserName = model.UserName,
                 IsActive = true
             };
-            appUser.Claims.Add(new AppUserClaims(JwtClaimTypes.Id, model.UserName));
+            if (new string[] { "Google", "Facebook" }.Any(i => i.Equals(model.Provider, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                appUser.Claims.Add(new AppUserClaims(JwtClaimTypes.Id, appUser.Id));
+                appUser.Claims.Add(new AppUserClaims(JwtClaimTypes.Email, model.UserName));
+            }
+            else
+            {
+                appUser.Claims.Add(new AppUserClaims(JwtClaimTypes.Id, model.UserName));
+
+            }
             appUser.Claims.Add(new AppUserClaims(JwtClaimTypes.Name, model.FullName));
             appUser.Claims.Add(new AppUserClaims(JwtClaimTypes.PhoneNumber, model.Phone));
             appUser.Logins.Add(new AppUserLogin()

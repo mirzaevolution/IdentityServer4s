@@ -103,7 +103,7 @@ namespace IdentityServer4.Quickstart.UI
             }
 
             // lookup our user and external provider info
-            var (user, provider, providerUserId) = await FindUserFromExternalProvider(result);
+            var (user, provider, providerUserId, email) = await FindUserFromExternalProvider(result);
             if (user == null)
             {
                 // this might be where you might initiate a custom workflow for user registration
@@ -116,6 +116,22 @@ namespace IdentityServer4.Quickstart.UI
                     provider = provider,
                     returnUrl = url
                 });
+
+
+                if (new string[] { "Google", "Facebook" }.Any(i => i.Equals(provider, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    url = Url.Action(nameof(Callback));
+                    redirectUrl = Url.Action("RegisterExternal", "Account", new
+                    {
+                        userId = email,
+                        provider = provider,
+                        returnUrl = url
+                    });
+                }
+
+
+
+
                 return Redirect(redirectUrl);
             }
 
@@ -206,7 +222,7 @@ namespace IdentityServer4.Quickstart.UI
             }
         }
 
-        private async Task<(AppUser user, string provider, string providerId)> FindUserFromExternalProvider(AuthenticateResult result)
+        private async Task<(AppUser user, string provider, string providerId, string email)> FindUserFromExternalProvider(AuthenticateResult result)
         {
             var externalUser = result.Principal;
 
@@ -216,19 +232,31 @@ namespace IdentityServer4.Quickstart.UI
             var userIdClaim = externalUser.FindFirst(JwtClaimTypes.Subject) ??
                               externalUser.FindFirst(ClaimTypes.NameIdentifier) ??
                               throw new Exception("Unknown userid");
+            var emailClaim = externalUser.FindFirstValue(JwtClaimTypes.Email) ??
+                             externalUser.FindFirstValue(ClaimTypes.Email);
+
 
             // remove the user id claim so we don't include it as an extra claim if/when we provision the user
             var claims = externalUser.Claims.ToList();
             claims.Remove(userIdClaim);
 
-            var provider = result.Properties.Items["scheme"];
-            var providerUserId = userIdClaim.Value;
+            string provider = result.Properties.Items["scheme"];
+            string providerUserId = userIdClaim.Value;
+            string email = emailClaim;
+            AppUser user = null;
+            if (new string[] { "Google", "Facebook" }.Any(i => i.Equals(provider, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                user = await _authenticationService.GetUserByUserName(emailClaim);
+            }
+            else
+            {
+                // find external user
+                //var user = _users.FindByExternalProvider(provider, providerUserId);
+                user = await _authenticationService.GetUserByUserName(providerUserId);
 
-            // find external user
-            //var user = _users.FindByExternalProvider(provider, providerUserId);
-            var user = await _authenticationService.GetUserByUserName(providerUserId);
+            }
 
-            return (user, provider, providerUserId);
+            return (user, provider, providerUserId, email);
         }
 
         private void ProcessLoginCallbackForOidc(AuthenticateResult externalResult, List<Claim> localClaims, AuthenticationProperties localSignInProps)

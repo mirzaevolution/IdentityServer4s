@@ -8,5 +8,7 @@ namespace Rewind.One.AuthServer.Entities
         public string UserId { get; set; }
         public string ProviderName { get; set; }
         public string ProviderKey { get; set; }
+        public virtual AppUser User { get; set; }
+
     }
 }

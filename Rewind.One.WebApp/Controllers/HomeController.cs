@@ -70,12 +70,7 @@ namespace Rewind.One.WebApp.Controllers
         }
 
 
-        [Authorize, Route("/Logout")]
-        public IActionResult Logout()
-        {
-            return SignOut(CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
-
-        }
+        #region Call apis with custom auto refresh library       
         [Authorize]
         public async Task<IActionResult> GetApiData()
         {
@@ -147,18 +142,13 @@ namespace Rewind.One.WebApp.Controllers
             return View();
         }
 
-        [Route("/AccessDenied")]
-        public IActionResult AccessDenied()
-        {
-            return View();
-        }
 
         [Authorize]
         public async Task<IActionResult> RevokeTokens()
         {
             string accessToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
             string refeshToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.RefreshToken);
-            if(!string.IsNullOrEmpty(accessToken) && !string.IsNullOrEmpty(refeshToken))
+            if (!string.IsNullOrEmpty(accessToken) && !string.IsNullOrEmpty(refeshToken))
             {
                 string baseAddress = _configuration["AuthServer"];
                 string clientId = _configuration["ClientId"];
@@ -168,7 +158,7 @@ namespace Rewind.One.WebApp.Controllers
                     await client.GetDiscoveryDocumentAsync(
                             baseAddress
                         );
-                if(discoveryDocumentResponse.HttpStatusCode == HttpStatusCode.OK)
+                if (discoveryDocumentResponse.HttpStatusCode == HttpStatusCode.OK)
                 {
                     var accessTokenRevokeResult = await client.RevokeTokenAsync(new TokenRevocationRequest
                     {
@@ -176,7 +166,7 @@ namespace Rewind.One.WebApp.Controllers
                         ClientId = clientId,
                         ClientSecret = clientSecret,
                         Token = accessToken
-                        
+
                     });
                     //if (!accessTokenRevokeResult.IsError)
                     //{
@@ -194,6 +184,68 @@ namespace Rewind.One.WebApp.Controllers
             }
 
             return RedirectToAction("Index", "Home");
+        }
+        #endregion
+
+
+        #region Call apis with built-in auto refresh library
+        [Authorize]
+        //public async Task<IActionResult> CallApi()
+        //{
+        //    var httpClient = _httpClientFactory.CreateClient("AutoAuthorizedHttpClient");
+        //    HttpResponseMessage response = await httpClient.GetAsync("https://localhost:44356/api/hello");
+        //    if (response.IsSuccessStatusCode)
+        //    {
+        //        string message = await response.Content.ReadAsStringAsync();
+        //        HelloApiResponse messageObj = JsonConvert.DeserializeObject<HelloApiResponse>(message);
+        //        return Ok(new { message = messageObj.Message });
+
+        //    }
+
+        //    else
+        //    {
+        //        return StatusCode(401);
+
+        //    }
+
+        //}
+
+        //[Authorize]
+        //public async Task<IActionResult> CallApiManualWithAutoRefresh()
+        //{
+        //    var httpClient = _httpClientFactory.CreateClient();
+        //    string accessToken = await HttpContext.GetUserAccessTokenAsync();
+        //    httpClient.SetBearerToken(accessToken);
+        //    HttpResponseMessage response = await httpClient.GetAsync("https://localhost:44356/api/hello");
+        //    if (response.IsSuccessStatusCode)
+        //    {
+        //        string message = await response.Content.ReadAsStringAsync();
+        //        HelloApiResponse messageObj = JsonConvert.DeserializeObject<HelloApiResponse>(message);
+        //        return Ok(new { message = messageObj.Message });
+
+        //    }
+
+        //    else
+        //    {
+        //        return StatusCode(401);
+
+        //    }
+        //}
+
+        #endregion
+
+
+
+        [Authorize, Route("/Logout")]
+        public IActionResult Logout()
+        {
+            return SignOut(CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
+
+        }
+        [Route("/AccessDenied")]
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

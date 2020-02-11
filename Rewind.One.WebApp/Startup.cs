@@ -17,7 +17,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Rewind.One.WebApp.Helpers;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Http;
-
+using IdentityModel.AspNetCore.AccessTokenManagement;
 namespace Rewind.One.WebApp
 {
     public class Startup
@@ -58,7 +58,6 @@ namespace Rewind.One.WebApp
                 options.GetClaimsFromUserInfoEndpoint = false;
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.ResponseType = ResponseTypes.CodeIdToken;
-
                 //options.ClaimActions.MapJsonKey(JwtClaimTypes.Name, JwtClaimTypes.Name);
                 //options.ClaimActions.MapJsonKey(JwtClaimTypes.Email, JwtClaimTypes.Name);
                 //options.ClaimActions.MapJsonKey(JwtClaimTypes.PhoneNumber, JwtClaimTypes.PhoneNumber);
@@ -66,7 +65,7 @@ namespace Rewind.One.WebApp
                 //options.ClaimActions.MapJsonKey("dev_platform", "dev_platform");
 
                 options.ClaimActions.MapAll();
-             
+
             });
             services.AddHttpContextAccessor();
             services.AddTransient<OpenIdConnectOAuthHelper>();
@@ -80,6 +79,12 @@ namespace Rewind.One.WebApp
                  }
              });
             services.AddHttpClient("GeneralHttpClient");
+            //services.AddAccessTokenManagement(options =>
+            //{
+            //    options.Client.Scope = "crypto_api";
+            //});
+            //services.AddHttpClient("AutoAuthorizedHttpClient")
+            //    .AddClientAccessTokenHandler();
             services.AddMvc().SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
         }
 

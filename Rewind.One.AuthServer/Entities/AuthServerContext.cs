@@ -18,8 +18,8 @@ namespace Rewind.One.AuthServer.Entities
             modelBuilder.Entity<AppUser>(options =>
             {
                 options.HasIndex(c => c.UserName).HasName("Idx_Users_UserName");
-                options.HasMany(c => c.Claims);
-                options.HasMany(c => c.Logins);
+                options.HasMany(c => c.Claims).WithOne(c => c.User).HasForeignKey(c => c.UserId).OnDelete(DeleteBehavior.Cascade);
+                options.HasMany(c => c.Logins).WithOne(c => c.User).HasForeignKey(c => c.UserId).OnDelete(DeleteBehavior.Cascade);
                 options.ToTable("Users");
 
             });

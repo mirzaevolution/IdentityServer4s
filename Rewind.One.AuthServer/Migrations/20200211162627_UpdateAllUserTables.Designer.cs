@@ -2,15 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rewind.One.AuthServer.Entities;
 
 namespace Rewind.One.AuthServer.Migrations
 {
     [DbContext(typeof(AuthServerContext))]
-    partial class AuthServerContextModelSnapshot : ModelSnapshot
+    [Migration("20200211162627_UpdateAllUserTables")]
+    partial class UpdateAllUserTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

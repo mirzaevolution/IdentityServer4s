@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 using System.IdentityModel;
 using System.IdentityModel.Tokens.Jwt;
 using IdentityModel;
@@ -36,6 +37,14 @@ namespace Rewind.One.AuthServer
                 options.UseSqlServer(Configuration.GetConnectionString("Default"));
             });
 
+            services.AddAuthentication()
+                .AddGoogle("Google", options =>
+                 {
+                     options.ClientId = "1000424342606-inpso6u9jtv60jv8v9r8av04rljqn5uc.apps.googleusercontent.com";
+                     options.ClientSecret = "ueFT0tIBkkW0x9hbY09dGYRE";
+                     options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                 });
+
             services.AddIdentityServer()
                 .AddInMemoryIdentityResources(InMemoryAuthConfiguration.GetIdentityResources())
                 .AddInMemoryApiResources(InMemoryAuthConfiguration.GetApiResources())
@@ -43,7 +52,6 @@ namespace Rewind.One.AuthServer
                 //.AddTestUsers(InMemoryAuthConfiguration.GetTestUsers())
                 .AddPersistentUserService()
                 .AddDeveloperSigningCredential();
-
             services.AddControllersWithViews();
         }
 
@@ -67,8 +75,6 @@ namespace Rewind.One.AuthServer
             app.UseRouting();
 
             app.UseIdentityServer();
-
-
 
             app.UseEndpoints(endpoints =>
             {

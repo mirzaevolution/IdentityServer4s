@@ -96,6 +96,9 @@ namespace Rewind.One.AuthServer
                         Constants.API_CRYPTO_NAME,
                         Constants.SCOPE_DEV_ENV_NAME
                     },
+                    AccessTokenLifetime = 60,
+                    RefreshTokenExpiration = TokenExpiration.Sliding,
+                    SlidingRefreshTokenLifetime = 1296000,
                     AccessTokenType = AccessTokenType.Reference,
                     AllowAccessTokensViaBrowser = true,
                     AlwaysIncludeUserClaimsInIdToken = true,
@@ -115,7 +118,6 @@ namespace Rewind.One.AuthServer
                 }
             };
         }
-
         public static List<TestUser> GetTestUsers()
         {
             return new List<TestUser>
