@@ -18,6 +18,8 @@ using IdentityServer4.Models;
 using Rewind.One.AuthServer.Entities;
 using Microsoft.EntityFrameworkCore;
 using Rewind.One.AuthServer.Extensions;
+using Rewind.One.AuthServer.Services;
+
 namespace Rewind.One.AuthServer
 {
     public class Startup
@@ -51,6 +53,7 @@ namespace Rewind.One.AuthServer
                 .AddInMemoryClients(InMemoryAuthConfiguration.GetClients())
                 //.AddTestUsers(InMemoryAuthConfiguration.GetTestUsers())
                 .AddPersistentUserService()
+                .AddResourceOwnerValidator<ResourceOwnerPasswordValidatorService>()
                 .AddDeveloperSigningCredential();
             services.AddControllersWithViews();
         }

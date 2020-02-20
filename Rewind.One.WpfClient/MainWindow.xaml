@@ -1,0 +1,28 @@
+﻿<Window x:Class="Rewind.One.WpfClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Rewind.One.WpfClient"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="381" Width="316">
+    <Window.Resources>
+        <Style TargetType="Button" x:Key="DefaultButtonStyle">
+            <Setter Property="Width" Value="100"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Margin" Value="10"/>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <Button Name="buttonGetToken" Content="Get Token" Style="{StaticResource DefaultButtonStyle}"
+                Click="GetTokenHandler"/>
+        <Button Name="buttonGetData" Content="Get Data" Style="{StaticResource DefaultButtonStyle}" Grid.Row="1"
+                Click="GetDataHandler"/>
+        <TextBlock Name="textBlockResult" Margin="10" FontSize="18" Grid.Row="2" TextAlignment="Center"/>
+    </Grid>
+</Window>

@@ -57,7 +57,7 @@ namespace Rewind.One.AuthServer
         {
             return new List<Client>
             {
-                //api
+                //postman + native client
                 new Client
                 {
                     ClientId = "rewind_crypto_api",
@@ -66,10 +66,6 @@ namespace Rewind.One.AuthServer
                         new Secret("apisecret".Sha256())
                     },
                     AllowedGrantTypes = GrantTypes.ResourceOwnerPasswordAndClientCredentials,
-                    AllowedCorsOrigins =
-                    {
-                        "*"
-                    },
                     AllowedScopes =
                     {
                         OidcConstants.StandardScopes.OfflineAccess,
