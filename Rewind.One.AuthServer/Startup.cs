@@ -59,6 +59,13 @@ namespace Rewind.One.AuthServer
                 .AddInMemoryClients(InMemoryAuthConfiguration.GetClients())
                 //.AddTestUsers(InMemoryAuthConfiguration.GetTestUsers())
                 .AddPersistentUserService()
+                .AddConfigurationStore<ConfigurationDbContext>(options =>
+                {
+                    options.ConfigureDbContext = context =>
+                    {
+                        context.UseSqlServer(Configuration.GetConnectionString("Default"), sql => sql.MigrationsAssembly(assemblyName));
+                    };
+                })
                 .AddOperationalStore<PersistedGrantDbContext>(options =>
                 {
                     options.ConfigureDbContext = context =>
@@ -73,13 +80,17 @@ namespace Rewind.One.AuthServer
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, AuthServerContext context)
+        public void Configure(IApplicationBuilder app,
+            IWebHostEnvironment env,
+            AuthServerContext authServerContext,
+            ConfigurationDbContext configurationDbContext)
         {
-            context.Database.Migrate();
+            authServerContext.Database.Migrate();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                context.CreateInitUsers();
+                authServerContext.CreateInitUsers();
+                configurationDbContext.SeedConfigurations();
             }
             else
             {
