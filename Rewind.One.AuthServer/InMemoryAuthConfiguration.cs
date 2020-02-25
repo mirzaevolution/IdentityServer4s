@@ -92,9 +92,9 @@ namespace Rewind.One.AuthServer
                         Constants.API_CRYPTO_NAME,
                         Constants.SCOPE_DEV_ENV_NAME
                     },
-                    AccessTokenLifetime = 60,
+                    //AccessTokenLifetime = 60,
                     RefreshTokenExpiration = TokenExpiration.Sliding,
-                    SlidingRefreshTokenLifetime = 1296000,
+                    //SlidingRefreshTokenLifetime = 1296000,
                     AccessTokenType = AccessTokenType.Reference,
                     AllowAccessTokensViaBrowser = true,
                     AlwaysIncludeUserClaimsInIdToken = true,

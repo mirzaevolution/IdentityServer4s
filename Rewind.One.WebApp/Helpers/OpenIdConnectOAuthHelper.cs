@@ -35,10 +35,10 @@ namespace Rewind.One.WebApp.Helpers
             {
                 HttpClient client = _httpClientFactory.CreateClient("GeneralHttpClient");
                 DiscoveryDocumentResponse discoveryDocumentResponse = await GetDiscoveryDocument(client);
-                if(discoveryDocumentResponse.HttpStatusCode == System.Net.HttpStatusCode.OK)
+                if (discoveryDocumentResponse.HttpStatusCode == System.Net.HttpStatusCode.OK)
                 {
                     string currentAccessToken = await _httpContextAccessor.HttpContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
-                    if ((DateTimeOffset.Parse(expiresAtString) < DateTimeOffset.UtcNow) || 
+                    if ((DateTimeOffset.Parse(expiresAtString) < DateTimeOffset.UtcNow) ||
                         !await IntrospectToken(client, currentAccessToken, discoveryDocumentResponse.IntrospectionEndpoint))
                     {
                         token = await RenewToken(client, discoveryDocumentResponse.TokenEndpoint);
@@ -54,7 +54,7 @@ namespace Rewind.One.WebApp.Helpers
         }
         private async Task<string> RenewToken(HttpClient client, string tokenEndpoint)
         {
-            
+
             string token = string.Empty;
             string refreshToken = await _httpContextAccessor.HttpContext.GetTokenAsync(
                     OpenIdConnectParameterNames.RefreshToken
@@ -101,11 +101,11 @@ namespace Rewind.One.WebApp.Helpers
             var result = await client.IntrospectTokenAsync(new TokenIntrospectionRequest
             {
                 Address = introspectionEndpoint,
-                ClientId = _configuration["ApiClientId"],
-                ClientSecret = _configuration["ApiClientSecret"],
+                ClientId = _configuration["ClientId"],
+                ClientSecret = _configuration["ClientSecret"],
                 Token = token
             });
-            
+
             if (result.IsError)
                 return false;
             return result.IsActive;

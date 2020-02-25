@@ -19,6 +19,10 @@ using Rewind.One.AuthServer.Entities;
 using Microsoft.EntityFrameworkCore;
 using Rewind.One.AuthServer.Extensions;
 using Rewind.One.AuthServer.Services;
+using System.Reflection;
+using IdentityServer4.EntityFramework.DbContexts;
+using System.Security.Cryptography.X509Certificates;
+using System.IO;
 
 namespace Rewind.One.AuthServer
 {
@@ -47,14 +51,24 @@ namespace Rewind.One.AuthServer
                      options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
                  });
 
+            string assemblyName = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+
             services.AddIdentityServer()
                 .AddInMemoryIdentityResources(InMemoryAuthConfiguration.GetIdentityResources())
                 .AddInMemoryApiResources(InMemoryAuthConfiguration.GetApiResources())
                 .AddInMemoryClients(InMemoryAuthConfiguration.GetClients())
                 //.AddTestUsers(InMemoryAuthConfiguration.GetTestUsers())
                 .AddPersistentUserService()
+                .AddOperationalStore<PersistedGrantDbContext>(options =>
+                {
+                    options.ConfigureDbContext = context =>
+                    {
+                        context.UseSqlServer(Configuration.GetConnectionString("Default"), sql => sql.MigrationsAssembly(assemblyName));
+                    };
+                })
                 .AddResourceOwnerValidator<ResourceOwnerPasswordValidatorService>()
-                .AddDeveloperSigningCredential();
+                //.AddDeveloperSigningCredential();
+                .AddSigningCredential(LoadCertificate());
             services.AddControllersWithViews();
         }
 
@@ -85,6 +99,37 @@ namespace Rewind.One.AuthServer
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
+        }
+
+
+        public X509Certificate2 LoadCertificateFromStore()
+        {
+            string thumbprint = "31D3C2057B473858EA5468EEB090CD488556ACCF";
+            using (X509Store store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
+            {
+                store.Open(OpenFlags.ReadOnly);
+                var certCollection = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, true);
+                if (certCollection.Count == 0)
+                {
+                    throw new Exception("The specified certificate is not found");
+                }
+                return certCollection[0];
+            }
+        }
+        public X509Certificate2 LoadCertificate()
+        {
+            string location = "Certs/MirzaCert.pfx";
+            if (File.Exists(location))
+            {
+                string password = "future";
+                X509Certificate2Collection x509Certificate2Collection = new X509Certificate2Collection();
+                x509Certificate2Collection.Import(location, password, X509KeyStorageFlags.UserKeySet);
+                if (x509Certificate2Collection.Count > 0)
+                {
+                    return x509Certificate2Collection[0];
+                }
+            }
+            throw new FileNotFoundException($"{location} is not found");
         }
     }
 }
